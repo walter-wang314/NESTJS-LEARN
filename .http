@@ -1,0 +1,31 @@
+
+@baseUrl = http://localhost:3000
+
+@contentType = application/json
+
+
+###
+GET {{baseUrl}}/tasks
+
+###
+GET {{baseUrl}}/tasks/a6dffa66-aa8a-44e8-b71b-8c162c332860
+
+# create new task
+###
+POST {{baseUrl}}/tasks
+Content-Type: {{contentType}}
+
+{
+  "title": "Learn NestJS",
+  "description": "Complete the NestJS course",
+  "status": "OPEN"
+}
+
+### update task status
+PATCH {{baseUrl}}/tasks/a6dffa66-aa8a-44e8-b71b-8c162c332860/status
+Content-Type:  {{contentType}}
+
+{
+	"status": "DONE"
+}
+
