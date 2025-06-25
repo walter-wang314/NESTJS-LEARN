@@ -1,7 +1,11 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   NotFoundException,
   Param,
   Patch,
@@ -12,6 +16,8 @@ import { ITask } from './tasks.model';
 import { CreateTaskDto } from './create-task.dto';
 import { FindOneParams } from './find-one.params';
 import { UpdateTaskStatusDto } from './update-task-status.dto';
+import { UpdateTaskDto } from './update-task.dto';
+import { WrongTaskStatusException } from './exceptions/wrong-task-status.exception';
 
 @Controller('tasks')
 export class TasksController {
@@ -33,14 +39,38 @@ export class TasksController {
     return this.tasksService.createOneTask(createTaskDto);
   }
 
-  @Patch('/:id/status')
-  public updateTaskStatus(
+  // @Patch('/:id/status')
+  // public updateTaskStatus(
+  //   @Param() param: FindOneParams,
+  //   @Body() updateTaskStatusDto: UpdateTaskStatusDto,
+  // ) {
+  //   const task = this.findOneOrFailed(param.id);
+  //   task.status = updateTaskStatusDto.status;
+  //   return task;
+  // }
+
+  @Patch('/:id')
+  public updateTask(
     @Param() param: FindOneParams,
-    @Body() updateTaskStatusDto: UpdateTaskStatusDto,
-  ) {
+    @Body() updateTaskDto: UpdateTaskDto,
+  ): ITask {
     const task = this.findOneOrFailed(param.id);
-    task.status = updateTaskStatusDto.status;
-    return task;
+    try {
+      return this.tasksService.updateTask(task, updateTaskDto);
+    } catch (error) {
+      if (error instanceof WrongTaskStatusException) {
+        throw new BadRequestException(error.message);
+      }
+
+      throw error;
+    }
+  }
+
+  @Delete('/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  public deleteOneTask(@Param() param: FindOneParams) {
+    const task = this.findOneOrFailed(param.id);
+    this.tasksService.deleteOneTask(task);
   }
 
   private findOneOrFailed(id: string): ITask {

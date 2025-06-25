@@ -4,28 +4,35 @@
 @contentType = application/json
 
 
-###
+### Get All Tasks
+# @name getAllTasks
 GET {{baseUrl}}/tasks
 
-###
-GET {{baseUrl}}/tasks/a6dffa66-aa8a-44e8-b71b-8c162c332860
-
-# create new task
-###
+### Create New Task
+# @name createOneTask
 POST {{baseUrl}}/tasks
 Content-Type: {{contentType}}
 
 {
   "title": "Learn NestJS",
   "description": "Complete the NestJS course",
-  "status": "OPEN"
+  "status": "DONE"
 }
 
+### Set Task ID
+@taskId = {{createOneTask.response.body.id}}
+
+### Get One Task
+# @name getOneTask
+GET {{baseUrl}}/tasks/{{taskId}}
+
 ### update task status
-PATCH {{baseUrl}}/tasks/a6dffa66-aa8a-44e8-b71b-8c162c332860/status
+PATCH {{baseUrl}}/tasks/{{taskId}}
 Content-Type:  {{contentType}}
 
 {
-	"status": "DONE"
+	"status": "OPEN"
 }
 
+### delete one task
+DELETE {{baseUrl}}/tasks/{{taskId}}
