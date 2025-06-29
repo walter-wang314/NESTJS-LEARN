@@ -12,49 +12,38 @@ import {
   Post,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { ITask } from './tasks.model';
 import { CreateTaskDto } from './create-task.dto';
 import { FindOneParams } from './find-one.params';
-import { UpdateTaskStatusDto } from './update-task-status.dto';
 import { UpdateTaskDto } from './update-task.dto';
 import { WrongTaskStatusException } from './exceptions/wrong-task-status.exception';
+import { Tasks } from './tasks.entity';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  public findAllTasks(): ITask[] {
-    return this.tasksService.getAllTasks();
+  public async findAllTasks(): Promise<Tasks[]> {
+    return await this.tasksService.getAllTasks();
   }
 
   @Get('/:id')
-  public findOneTask(@Param() params: FindOneParams): ITask | undefined {
-    return this.findOneOrFailed(params.id);
+  public async findOneTask(@Param() params: FindOneParams): Promise<Tasks> {
+    return await this.findOneOrFailed(params.id);
   }
 
   @Post()
-  public createOneTask(@Body() createTaskDto: CreateTaskDto) {
+  public async createOneTask(@Body() createTaskDto: CreateTaskDto) {
     console.log('createTaskDto:', createTaskDto);
-    return this.tasksService.createOneTask(createTaskDto);
+    return await this.tasksService.createOneTask(createTaskDto);
   }
 
-  // @Patch('/:id/status')
-  // public updateTaskStatus(
-  //   @Param() param: FindOneParams,
-  //   @Body() updateTaskStatusDto: UpdateTaskStatusDto,
-  // ) {
-  //   const task = this.findOneOrFailed(param.id);
-  //   task.status = updateTaskStatusDto.status;
-  //   return task;
-  // }
-
   @Patch('/:id')
-  public updateTask(
+  public async updateTask(
     @Param() param: FindOneParams,
     @Body() updateTaskDto: UpdateTaskDto,
-  ): ITask {
-    const task = this.findOneOrFailed(param.id);
+  ): Promise<Tasks> {
+    const task = await this.findOneOrFailed(param.id);
     try {
       return this.tasksService.updateTask(task, updateTaskDto);
     } catch (error) {
@@ -68,18 +57,18 @@ export class TasksController {
 
   @Delete('/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  public deleteOneTask(@Param() param: FindOneParams) {
-    const task = this.findOneOrFailed(param.id);
-    this.tasksService.deleteOneTask(task);
+  public async deleteOneTask(@Param() param: FindOneParams) {
+    const task = await this.findOneOrFailed(param.id);
+    await this.tasksService.deleteOneTask(task);
   }
 
-  private findOneOrFailed(id: string): ITask {
-    const oneTask = this.tasksService.getOneTask(id);
+  private async findOneOrFailed(id: string): Promise<Tasks> {
+    const task = await this.tasksService.getOneTask(id);
 
-    if (!oneTask) {
-      throw new NotFoundException(`Task ${id} Not Found`);
+    if (!task) {
+      throw new NotFoundException();
     }
 
-    return oneTask;
+    return task;
   }
 }

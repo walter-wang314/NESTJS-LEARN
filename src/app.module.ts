@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { WorkerService } from './worker/worker.service';
@@ -6,21 +9,32 @@ import { MessageFormatterService } from './message-formatter/message-formatter.s
 import { LoggerService } from './logger/logger.service';
 import { CatsModule } from './cats/cats.module';
 import { TasksModule } from './tasks/tasks.module';
-import { ConfigModule } from '@nestjs/config';
 import { appConfig } from './config/app.config';
 import { appConfigSchema } from './config/config.types';
+import { typeOrmConfig } from './config/database.config';
+import { TypedConfigService } from './config/typed-config.service';
+import { Tasks } from './tasks/tasks.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: TypedConfigService) => ({
+        ...configService.get('database'),
+        entities: [Tasks],
+      }),
+    }),
     ConfigModule.forRoot({
-      load: [appConfig],
+      load: [appConfig, typeOrmConfig],
       validationSchema: appConfigSchema,
       validationOptions: {
+        // allowUnknown: false,
         abortEarly: true,
       },
     }),
-    CatsModule,
     TasksModule,
+    CatsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -28,6 +42,10 @@ import { appConfigSchema } from './config/config.types';
     WorkerService,
     MessageFormatterService,
     LoggerService,
+    {
+      provide: TypedConfigService,
+      useExisting: ConfigService,
+    },
   ],
 })
 export class AppModule {}

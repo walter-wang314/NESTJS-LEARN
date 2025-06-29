@@ -1,40 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { ITask, TaskStatus } from './tasks.model';
+import { TaskStatus } from './tasks.model';
 import { CreateTaskDto } from './create-task.dto';
-import { randomUUID } from 'crypto';
 import { UpdateTaskDto } from './update-task.dto';
 import { WrongTaskStatusException } from './exceptions/wrong-task-status.exception';
+import { Repository } from 'typeorm';
+import { Tasks } from './tasks.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class TasksService {
-  private tasks: ITask[] = [];
+  constructor(
+    @InjectRepository(Tasks)
+    private readonly tasksRepository: Repository<Tasks>,
+  ) {}
 
-  public getAllTasks() {
-    return this.tasks;
+  public async getAllTasks() {
+    return await this.tasksRepository.find();
   }
 
-  public getOneTask(id: string): ITask | undefined {
-    return this.tasks.find((task) => task.id === id);
+  public async getOneTask(id: string): Promise<Tasks | null> {
+    return await this.tasksRepository.findOneBy({ id });
   }
 
-  public createOneTask(createTaskDto: CreateTaskDto): ITask {
-    const task: ITask = {
-      id: randomUUID(),
-      ...createTaskDto,
-    };
-
-    this.tasks.push(task);
-
-    return task;
+  public async createOneTask(createTaskDto: CreateTaskDto): Promise<Tasks> {
+    return await this.tasksRepository.save(createTaskDto);
   }
 
-  public deleteOneTask(task: ITask) {
-    this.tasks = this.tasks.filter(
-      (filteredTask) => filteredTask.id !== task.id,
-    );
+  public async deleteOneTask(task: Tasks): Promise<void> {
+    await this.tasksRepository.delete(task);
   }
 
-  public updateTask(task: ITask, updateTaskDto: UpdateTaskDto) {
+  public async updateTask(
+    task: Tasks,
+    updateTaskDto: UpdateTaskDto,
+  ): Promise<Tasks> {
     if (
       updateTaskDto?.status &&
       !this.isValidStatusTransition(task.status, updateTaskDto.status)
@@ -42,7 +41,7 @@ export class TasksService {
       throw new WrongTaskStatusException();
     }
     Object.assign(task, updateTaskDto);
-    return task;
+    return await this.tasksRepository.save(task);
   }
 
   private isValidStatusTransition(
