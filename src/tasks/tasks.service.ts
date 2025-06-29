@@ -1,39 +1,39 @@
 import { Injectable } from '@nestjs/common';
-import { TaskStatus } from './tasks.model';
+import { TaskStatus } from './task.model';
 import { CreateTaskDto } from './create-task.dto';
 import { UpdateTaskDto } from './update-task.dto';
 import { WrongTaskStatusException } from './exceptions/wrong-task-status.exception';
 import { Repository } from 'typeorm';
-import { Tasks } from './tasks.entity';
+import { Task } from './task.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class TasksService {
   constructor(
-    @InjectRepository(Tasks)
-    private readonly tasksRepository: Repository<Tasks>,
+    @InjectRepository(Task)
+    private readonly tasksRepository: Repository<Task>,
   ) {}
 
   public async getAllTasks() {
     return await this.tasksRepository.find();
   }
 
-  public async getOneTask(id: string): Promise<Tasks | null> {
+  public async getOneTask(id: string): Promise<Task | null> {
     return await this.tasksRepository.findOneBy({ id });
   }
 
-  public async createOneTask(createTaskDto: CreateTaskDto): Promise<Tasks> {
+  public async createOneTask(createTaskDto: CreateTaskDto): Promise<Task> {
     return await this.tasksRepository.save(createTaskDto);
   }
 
-  public async deleteOneTask(task: Tasks): Promise<void> {
+  public async deleteOneTask(task: Task): Promise<void> {
     await this.tasksRepository.delete(task);
   }
 
   public async updateTask(
-    task: Tasks,
+    task: Task,
     updateTaskDto: UpdateTaskDto,
-  ): Promise<Tasks> {
+  ): Promise<Task> {
     if (
       updateTaskDto?.status &&
       !this.isValidStatusTransition(task.status, updateTaskDto.status)

@@ -16,19 +16,19 @@ import { CreateTaskDto } from './create-task.dto';
 import { FindOneParams } from './find-one.params';
 import { UpdateTaskDto } from './update-task.dto';
 import { WrongTaskStatusException } from './exceptions/wrong-task-status.exception';
-import { Tasks } from './tasks.entity';
+import { Task } from './task.entity';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  public async findAllTasks(): Promise<Tasks[]> {
+  public async findAllTasks(): Promise<Task[]> {
     return await this.tasksService.getAllTasks();
   }
 
   @Get('/:id')
-  public async findOneTask(@Param() params: FindOneParams): Promise<Tasks> {
+  public async findOneTask(@Param() params: FindOneParams): Promise<Task> {
     return await this.findOneOrFailed(params.id);
   }
 
@@ -42,7 +42,7 @@ export class TasksController {
   public async updateTask(
     @Param() param: FindOneParams,
     @Body() updateTaskDto: UpdateTaskDto,
-  ): Promise<Tasks> {
+  ): Promise<Task> {
     const task = await this.findOneOrFailed(param.id);
     try {
       return this.tasksService.updateTask(task, updateTaskDto);
@@ -62,7 +62,7 @@ export class TasksController {
     await this.tasksService.deleteOneTask(task);
   }
 
-  private async findOneOrFailed(id: string): Promise<Tasks> {
+  private async findOneOrFailed(id: string): Promise<Task> {
     const task = await this.tasksService.getOneTask(id);
 
     if (!task) {
