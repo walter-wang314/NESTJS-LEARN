@@ -35,9 +35,20 @@ PATCH {{baseUrl}}/tasks/{{taskId}}
 Content-Type:  {{contentType}}
 
 {
-	"status": "IN_PROGRESS"
+	"status": "IN_PROGRESS",
+	"labels": [{
+		"name": "done"
+	}]
 }
 
 ### delete one task
 DELETE {{baseUrl}}/tasks/{{taskId}}
 
+### add specific labels to tasks
+# @name addLabels
+POST {{baseUrl}}/tasks/{{taskId}}/labels
+Content-Type: {{contentType}}
+
+[
+	{"name": "prioritized"}
+]
