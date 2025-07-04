@@ -82,4 +82,14 @@ export class TasksController {
 
     return task;
   }
+
+  @Delete('/:id/labels')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  public async deleteLabels(
+    @Param() param: FindOneParams,
+    @Body() deleteLabels: string[],
+  ): Promise<void> {
+    const task = await this.findOneOrFailed(param.id);
+    this.tasksService.deleteTaskLabels(task, deleteLabels);
+  }
 }

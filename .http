@@ -50,5 +50,13 @@ POST {{baseUrl}}/tasks/{{taskId}}/labels
 Content-Type: {{contentType}}
 
 [
-	{"name": "prioritized"}
+	{"name": "prioritized"},
+	{"name": "bug"}
 ]
+
+### remove specific labels from taks
+# @name removeLabels
+DELETE {{baseUrl}}/tasks/{{taskId}}/labels
+Content-Type: {{contentType}}
+
+["prioritized", "bug"]
