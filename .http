@@ -8,6 +8,38 @@
 # @name getAllTasks
 GET {{baseUrl}}/tasks
 
+
+### Get All IN_PROGRESS Tasks
+# @name getInProgressTasks
+GET {{baseUrl}}/tasks?status=IN_PROGRESS
+
+
+### Get Pagination Tasks
+# @name getPaginationTasks
+GET {{baseUrl}}/tasks?offset=0&limit=4
+
+### Get Java Tasks
+### 采用 Repository 自带的方式，使用受限，title 和 description 必须同时满足条件才能够被返回；
+# @name getJavaTasks
+GET {{baseUrl}}/tasks?search=Java
+
+
+### Get Java Tasks
+### 采用 Query Builder 的方式，title ， description 满足一个即可；
+# @name getReactJSTasks
+GET {{baseUrl}}/tasks?search=ReactJS
+
+
+### Get Tasks by filtering labels
+# @name getTasksByLabels
+GET {{baseUrl}}/tasks?labels=urgent,bug
+
+
+### Get Tasks and sort order
+# @name getTasksBySortOrder
+GET {{baseUrl}}/tasks?sortBy=status&sortOrder=DESC&offset=0
+
+
 ### Create New Task
 # @name createOneTask
 POST {{baseUrl}}/tasks
