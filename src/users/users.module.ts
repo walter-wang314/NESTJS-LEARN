@@ -5,6 +5,7 @@ import { User } from './user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthConfig } from 'src/config/auth.config';
+import { PasswordService } from './password/password.service';
 
 @Module({
   imports: [
@@ -20,5 +21,6 @@ import { AuthConfig } from 'src/config/auth.config';
       }),
     }),
   ],
+  providers: [PasswordService],
 })
 export class UserModule {}
