@@ -24,9 +24,11 @@ export class UserService {
   public async createUser(userDto: CreateUserDto) {
     const hashedPassword = await this.passwordService.hash(userDto.password);
 
-    return await this.userRepository.save({
+    const user = this.userRepository.create({
       ...userDto,
       password: hashedPassword,
     });
+
+    return await this.userRepository.save(user);
   }
 }
