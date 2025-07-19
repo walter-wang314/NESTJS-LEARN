@@ -1,0 +1,73 @@
+
+@baseUrl = http://localhost:3000
+
+@contentType = application/json
+
+
+### Register User
+# @name registerUser
+GET {{baseUrl}}/tasks
+
+
+### Get All IN_PROGRESS Tasks
+# @name getInProgressTasks
+GET {{baseUrl}}/tasks?status=IN_PROGRESS
+
+
+### Get Pagination Tasks
+# @name getPaginationTasks
+GET {{baseUrl}}/tasks?offset=0&limit=4
+
+### Get Java Tasks
+### 采用 Repository 自带的方式，使用受限，title 和 description 必须同时满足条件才能够被返回；
+# @name getJavaTasks
+GET {{baseUrl}}/tasks?search=Java
+
+
+### Get Java Tasks
+### 采用 Query Builder 的方式，title ， description 满足一个即可；
+# @name getReactJSTasks
+GET {{baseUrl}}/tasks?search=ReactJS
+
+
+### Get Tasks by filtering labels
+# @name getTasksByLabels
+GET {{baseUrl}}/tasks?labels=urgent,bug
+
+
+### Get Tasks and sort order
+# @name getTasksBySortOrder
+GET {{baseUrl}}/tasks?sortBy=status&sortOrder=DESC&offset=0
+
+
+### Register One User
+# @name RegisterOneUser
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "walterwang",
+  "email": "walter@test.com",
+  "password": "Abc123@"
+}
+
+### Login One User
+# @name LoginOneUser
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "walter@test.com",
+  "password": "Abc123@"
+}
+
+### Set Task ID
+@accessToken = {{LoginOneUser.response.body.accessToken}}
+
+### Get One User Profile by Auth Guard
+# @name LoginOneUser
+GET {{baseUrl}}/auth/profile
+Content-Type: {{contentType}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3ODdhM2QxNC0xZTY2LTQ0ZmUtOTU4NC0wNjZjNzU1M2FjZGMiLCJuYW1lIjoid2FsdGVyd2FuZyIsImlhdCI6MTc1Mjg5MDc1OSwiZXhwIjoxNzUyODk0MzU5fQ.spAcThuSI4SqhQDmm2gM7ZumyYr4wSZS4t1mECh265U
+
+
