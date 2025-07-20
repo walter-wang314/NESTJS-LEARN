@@ -7,7 +7,6 @@ import {
   Post,
   Request,
   SerializeOptions,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -17,7 +16,10 @@ import { LoginDto } from '../login.dto';
 import { LoginResponse } from '../login.response';
 import { AuthRequest } from '../auth.request';
 import { UserService } from '../user/user.service';
-import { AuthGuard } from '../auth.guard';
+import { Public } from '../decorators/public.decorator';
+import { Roles } from '../decorators/roles.decorator';
+import { Role } from '../role.enum';
+import { AdminResponse } from '../admin.response';
 
 @Controller('auth')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -29,12 +31,14 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @Public()
   async register(@Body() createUserDto: CreateUserDto): Promise<User> {
     // console.log('createUserDto:', createUserDto);
     return await this.authService.register(createUserDto);
   }
 
   @Post('login')
+  @Public()
   async login(@Body() loginDto: LoginDto): Promise<LoginResponse> {
     const accessToken = await this.authService.login(
       loginDto.email,
@@ -45,7 +49,6 @@ export class AuthController {
   }
 
   @Get('profile')
-  @UseGuards(AuthGuard)
   async profile(@Request() request: AuthRequest): Promise<User | null> {
     // console.log('request:', request);
     const user = this.userService.findOneByUserId(request.user.sub);
@@ -55,5 +58,11 @@ export class AuthController {
     }
 
     return user;
+  }
+
+  @Get('admin')
+  @Roles(Role.ADMIN)
+  async adminOnly(): Promise<AdminResponse> {
+    return new AdminResponse({ message: 'This is for admins only!' });
   }
 }

@@ -1,8 +1,13 @@
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { TestSetup } from './utils/test-setup';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { User } from 'src/users/user.entity';
+import { Role } from 'src/users/role.enum';
+import { PasswordService } from 'src/users/password/password.service';
+import { JwtService } from '@nestjs/jwt';
 
-describe('AppController (e2e)', () => {
+describe('Authentication & Authorization (e2e)', () => {
   let testSetup: TestSetup;
 
   beforeEach(async () => {
@@ -22,6 +27,10 @@ describe('AppController (e2e)', () => {
     password: 'Password123!',
     name: 'Test User',
   };
+
+  it('it should require auth', () => {
+    return request(testSetup.app.getHttpServer()).get('/tasks').expect(401);
+  });
 
   it('/auth/register (POST)', () => {
     return request(testSetup.app.getHttpServer())
@@ -78,6 +87,67 @@ describe('AppController (e2e)', () => {
         expect(res.body.email).toBe(testUser.email);
         expect(res.body.name).toBe(testUser.name);
         expect(res.body).not.toHaveProperty('password');
+      });
+  });
+
+  it('should allow public route access', async () => {
+    await request(testSetup.app.getHttpServer())
+      .post('/auth/register')
+      .send(testUser)
+      .expect(201);
+
+    await request(testSetup.app.getHttpServer())
+      .post('/auth/login')
+      .send(testUser)
+      .expect(201);
+  });
+
+  it('should include roles in JWT token', async () => {
+    const userRepo = testSetup.app.get(getRepositoryToken(User));
+
+    await userRepo.save({
+      ...testUser,
+      roles: [Role.ADMIN],
+      password: await testSetup.app
+        .get(PasswordService)
+        .hash(testUser.password),
+    });
+
+    const loginResponse = await request(testSetup.app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: testUser.email, password: testUser.password });
+
+    const decoded = testSetup.app
+      .get(JwtService)
+      .verify(loginResponse.body.accessToken);
+
+    expect(decoded.roles).toBeDefined();
+    expect(decoded.roles).toContain(Role.ADMIN);
+  });
+
+  it('/auth/admin (GET) - admin access', async () => {
+    const userRepo = testSetup.app.get(getRepositoryToken(User));
+
+    await userRepo.save({
+      ...testUser,
+      roles: [Role.ADMIN],
+      password: await testSetup.app
+        .get(PasswordService)
+        .hash(testUser.password),
+    });
+
+    const response = await request(testSetup.app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: testUser.email, password: testUser.password });
+
+    const token = response.body.accessToken;
+
+    return request(testSetup.app.getHttpServer())
+      .get('/auth/admin')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.message).toBe('This is for admins only!');
       });
   });
 });
